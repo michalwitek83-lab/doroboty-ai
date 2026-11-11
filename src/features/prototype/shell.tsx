@@ -68,7 +68,7 @@ const employerNav = [
   ["/app/organizacja", "Organizacja", Building2],
 ] as const;
 export function Shell() {
-  const { state, issue, error, clearError } = usePrototype();
+  const { state, issue, error, clearError, otherTab } = usePrototype();
   const person = currentPerson(state);
   const { pathname } = useLocation();
   const workspace = pathname.startsWith("/app") && person;
@@ -98,6 +98,15 @@ export function Shell() {
             <Link className="underline" to="/app/settings">
               Ustawienia danych
             </Link>
+          </Notice>
+        )}
+        {otherTab && (
+          <Notice>
+            Dane demo zmieniono w innej karcie. Ta karta nie zapisuje już zmian, żeby ich nie
+            nadpisać. Odśwież stronę, aby kontynuować z aktualnymi danymi.{" "}
+            <button type="button" className="underline" onClick={() => window.location.reload()}>
+              Odśwież stronę
+            </button>
           </Notice>
         )}
       </>

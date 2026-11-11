@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { initialState, transition, type Action, type State } from "./model";
-import { parseState, readState, saveState, type StoragePort } from "./storage";
+import { parseState, readState, saveState, STORAGE_KEY, type StoragePort } from "./storage";
 function browserStorage(): StoragePort | null {
   try {
     return window.localStorage;
@@ -14,16 +14,28 @@ function useStore() {
   const [issue, setIssue] = useState(loaded.issue);
   const [error, setError] = useState("");
   const [blocked, setBlocked] = useState(loaded.blocked);
+  // Another tab of this origin saved the scenario: stop saving here so it is not overwritten.
+  const [otherTab, setOtherTab] = useState(false);
   const latest = useRef(state);
+  useEffect(() => {
+    function onStorage(e: StorageEvent) {
+      if (e.key === STORAGE_KEY || e.key === null) setOtherTab(true);
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
   function commit(next: State, replace = false) {
     latest.current = next;
     setState(next);
     setError("");
-    if (blocked && !replace) return;
+    if ((blocked || otherTab) && !replace) return;
     try {
       saveState(browserStorage(), next);
       setIssue("");
-      if (replace) setBlocked(false);
+      if (replace) {
+        setBlocked(false);
+        setOtherTab(false);
+      }
     } catch (e) {
       setIssue((e as Error).message);
     }
@@ -59,6 +71,7 @@ function useStore() {
     issue,
     error,
     blocked,
+    otherTab,
     original: loaded.original,
     run,
     importState,

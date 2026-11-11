@@ -16,6 +16,15 @@ The production-readiness audit (`docs/production-readiness.html`, audit 2026-11-
 - Support contact: temporary address `support@doroboty.ai`.
 - Crash handling is local only: no external error reporting service, nothing leaves the browser.
 
+## Second round (user answers, 2026-11-11)
+
+- Hosting: **Vercel Hobby**. The user assessed the demo as non-commercial (Hobby allows personal, non-commercial use only; this is the user's judgement, not legal advice). Expected use up to about 1,000 visits per month, budget 0 zł; Hobby pauses the project instead of charging when limits are exceeded.
+- Owner: the repository owner; they read `support@doroboty.ai` and will own the Vercel project.
+- Other tabs: add a warning. Implemented as: on a `storage` event for the scenario key, show a notice and stop saving in this tab until reload (import/reset still replace). Browser test with two pages.
+- Old saves: compatibility test only (no UI notice). Unit test reconstructs a pre-P1 save and checks it loads without being blocked.
+- Full gate: push the branch and open a PR to `main`, so CI runs `./scripts/verify` on Node 24 with Chromium.
+- Docs: Vercel setup/rollback in `docs/release-smoke-check.md` (Hobby Instant Rollback returns only to the previous production deployment and disables auto-assignment until a deployment is promoted, per Vercel docs checked 2026-11-11) and `docs/incident-plan.md`.
+
 ## Scope and acceptance criteria
 
 - `.gitattributes` forces LF for text files; working-tree files are converted CRLF→LF in place without discarding uncommitted work. `./scripts/verify` formatting, kit and packet checks no longer fail because of line endings. The immutable kit returns to its committed bytes.

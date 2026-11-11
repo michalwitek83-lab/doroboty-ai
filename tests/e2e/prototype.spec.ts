@@ -1112,3 +1112,22 @@ test("public demo warns about real data and shows the support contact", async ({
     page.getByRole("main").getByRole("link", { name: "support@doroboty.ai" }),
   ).toBeVisible();
 });
+
+test("a change in another tab stops this tab from overwriting it", async ({ page, context }) => {
+  await choose(page, "Anna Kowalska");
+  await page.goto("/#/app/profil");
+  const other = await context.newPage();
+  await other.goto("/#/app/profil");
+  await other.getByLabel("Nagłówek zawodowy").fill("Zmiana z drugiej karty");
+  await other.getByRole("button", { name: "Zapisz profil", exact: true }).click();
+  const notice = page.getByRole("status").filter({ hasText: "zmieniono w innej karcie" });
+  await expect(notice).toBeVisible();
+  await page.getByLabel("Nagłówek zawodowy").fill("Zmiana z pierwszej karty");
+  await page.getByRole("button", { name: "Zapisz profil", exact: true }).click();
+  const saved = await page.evaluate((key) => localStorage.getItem(key) ?? "", STORAGE_KEY);
+  expect(saved).toContain("Zmiana z drugiej karty");
+  expect(saved).not.toContain("Zmiana z pierwszej karty");
+  await notice.getByRole("button", { name: "Odśwież stronę" }).click();
+  await expect(page.getByLabel("Nagłówek zawodowy")).toHaveValue("Zmiana z drugiej karty");
+  await expect(notice).toBeHidden();
+});

@@ -18,6 +18,30 @@ function memory(raw: string | null = null) {
   };
 }
 describe("browser persistence and recovery", () => {
+  it("reads a save written before the P1 shortlist scenario was added", () => {
+    // Reconstructs the pre-P1 shape: no screening criteria, no hidden scenario applicants.
+    const legacy = JSON.parse(serializeState(initialState()));
+    const hidden = new Set(
+      legacy.people
+        .filter((p: { pickerHidden?: boolean }) => p.pickerHidden)
+        .map((p: { id: string }) => p.id),
+    );
+    expect(hidden.size).toBeGreaterThan(0);
+    for (const job of legacy.jobs) {
+      delete job.screeningCriteria;
+      delete job.previousScreeningCriteria;
+      delete job.criteriaChangedAt;
+    }
+    legacy.people = legacy.people.filter((p: { id: string }) => !hidden.has(p.id));
+    legacy.applications = legacy.applications.filter(
+      (a: { candidateId: string }) => !hidden.has(a.candidateId),
+    );
+    const restored = readState(memory(JSON.stringify(legacy)));
+    expect(restored.blocked).toBe(false);
+    expect(restored.issue).toBe("");
+    expect(restored.state.people.some((p) => p.pickerHidden)).toBe(false);
+    expect(restored.state.jobs.some((j) => j.screeningCriteria)).toBe(false);
+  });
   it("round-trips a complete valid scenario", () => {
     const storage = memory();
     const s = initialState();

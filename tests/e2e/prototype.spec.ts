@@ -1045,3 +1045,70 @@ test("P1 shortlist ranks by card, card quotes own text and keeps previous criter
   await page.goto("/#/app/aplikacje/application-example");
   await expect(page.getByRole("tab", { name: "Karta", exact: true })).toHaveCount(0);
 });
+
+test("render crash shows local recovery inside the shell, exports the save and recovers", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const original = String.prototype.localeCompare;
+    Object.defineProperty(String.prototype, "localeCompare", {
+      configurable: true,
+      value(this: string, ...args: Parameters<typeof original>) {
+        if ((window as unknown as { forceCrash?: boolean }).forceCrash)
+          throw new Error("Forced render crash");
+        return original.apply(this, args);
+      },
+    });
+  });
+  await choose(page, "Anna Kowalska");
+  await page.goto("/#/metodologia");
+  await page.evaluate(() => ((window as unknown as { forceCrash?: boolean }).forceCrash = true));
+  await page.getByRole("navigation", { name: "Główna nawigacja" }).getByText("Oferty").click();
+  const title = page.getByRole("heading", { level: 1, name: "Coś poszło nie tak" });
+  await expect(title).toBeFocused();
+  await expect(page.getByRole("link", { name: "DoRoboty.ai — strona główna" })).toBeVisible();
+  await expect(
+    page.getByRole("main").getByRole("link", { name: "support@doroboty.ai" }),
+  ).toHaveAttribute("href", "mailto:support@doroboty.ai");
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Pobierz zapisane dane" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("doroboty-zapis-do-odzyskania.txt");
+  expect(JSON.parse(await readFile(await file.path(), "utf8")).activePersonId).toBeTruthy();
+  await page.getByRole("button", { name: "Resetuj scenariusz" }).click();
+  await expect(page.getByRole("button", { name: "Potwierdź reset" })).toBeFocused();
+  await page.getByRole("button", { name: "Anuluj" }).click();
+  await expect(page.getByRole("button", { name: "Resetuj scenariusz" })).toBeFocused();
+  await page.evaluate(() => ((window as unknown as { forceCrash?: boolean }).forceCrash = false));
+  await page.getByRole("button", { name: "Spróbuj ponownie" }).click();
+  await expect(title).toBeHidden();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  expect(await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY)).not.toBeNull();
+  await page.evaluate(() => ((window as unknown as { forceCrash?: boolean }).forceCrash = true));
+  await page.goto("/#/metodologia");
+  await page.getByRole("navigation", { name: "Główna nawigacja" }).getByText("Oferty").click();
+  await page.getByRole("button", { name: "Resetuj scenariusz" }).click();
+  await page.getByRole("button", { name: "Potwierdź reset" }).click();
+  await page.waitForLoadState("load");
+  await expect(page.getByRole("link", { name: "Wybierz osobę" })).toBeVisible();
+});
+
+test("public demo warns about real data and shows the support contact", async ({ page }) => {
+  await page.goto("/");
+  const footer = page.getByRole("contentinfo");
+  await expect(footer).toContainText("Nie wpisuj prawdziwych danych osobowych");
+  await expect(footer.getByRole("link", { name: "support@doroboty.ai" })).toHaveAttribute(
+    "href",
+    "mailto:support@doroboty.ai",
+  );
+  await choose(page, "Anna Kowalska");
+  await page.goto("/#/aplikuj/ai-product-manager");
+  await expect(page.getByRole("form", { name: "Twoja aplikacja" })).toContainText(
+    "Nie wpisuj prawdziwych danych osobowych",
+  );
+  await page.goto("/#/app/settings");
+  await expect(page.getByRole("heading", { name: "Zgłoś problem" })).toBeVisible();
+  await expect(
+    page.getByRole("main").getByRole("link", { name: "support@doroboty.ai" }),
+  ).toBeVisible();
+});

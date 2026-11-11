@@ -18,6 +18,7 @@ import { BrandMark } from "@/features/public/brand-mark";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { currentPerson } from "./model";
 import { usePrototype } from "./store";
+import { CrashRecovery, SUPPORT_EMAIL } from "./crash-recovery";
 import { cn } from "@/lib/utils";
 const navigation = [
   { to: "/oferty", label: "Oferty" },
@@ -106,7 +107,9 @@ export function Shell() {
         </p>
       )}
       <div key={`${state.activePersonId}:${pathname}`}>
-        <Outlet />
+        <CrashRecovery resetKey={pathname}>
+          <Outlet />
+        </CrashRecovery>
       </div>
     </>
   );
@@ -289,6 +292,15 @@ export function Shell() {
                 <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted-foreground">
                   Praca dla ludzi, którzy potrafią z AI zbudować coś wartościowego — nie tylko
                   wpisać je do CV.
+                </p>
+                <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted-foreground">
+                  To publiczne demo z przykładowymi danymi. Nie wpisuj prawdziwych danych osobowych.
+                </p>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Zgłoś problem:{" "}
+                  <a className="underline" href={`mailto:${SUPPORT_EMAIL}`}>
+                    {SUPPORT_EMAIL}
+                  </a>
                 </p>
               </div>
               <nav

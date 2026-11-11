@@ -319,6 +319,10 @@ export function ApplyPage() {
             <p>
               Aplikujesz jako <strong>{person.name}</strong>.
             </p>
+            <p className="prototype-notice application-demo-note">
+              To publiczne demo z przykładowymi danymi. Nie wpisuj prawdziwych danych osobowych —
+              aplikacja nie trafia do żadnego pracodawcy i zostaje tylko w tej przeglądarce.
+            </p>
           </header>
           <section className="application-form-section" aria-labelledby="application-cv-title">
             <h3 id="application-cv-title">Twoje CV</h3>

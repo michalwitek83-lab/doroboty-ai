@@ -17,6 +17,7 @@ import {
 import { EmployerJobs, EmployerJobEditor, CompanyEditor } from "./employer";
 import { SettingsPage, PrivacyPage, TermsPage } from "./settings";
 import { CasePage } from "./case";
+import { CrashRecovery } from "./crash-recovery";
 function AppRoutes() {
   return (
     <Routes>
@@ -150,10 +151,12 @@ function AppRoutes() {
 }
 export function App() {
   return (
-    <PrototypeProvider>
-      <HashRouter>
-        <AppRoutes />
-      </HashRouter>
-    </PrototypeProvider>
+    <CrashRecovery>
+      <PrototypeProvider>
+        <HashRouter>
+          <AppRoutes />
+        </HashRouter>
+      </PrototypeProvider>
+    </CrashRecovery>
   );
 }

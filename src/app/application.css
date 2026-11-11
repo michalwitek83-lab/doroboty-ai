@@ -299,3 +299,20 @@
   background: var(--gui-color-1);
   color: var(--gui-text);
 }
+.application-assistant {
+  display: grid;
+  gap: 14px;
+}
+.application-proposal {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--pp-line);
+  border-radius: var(--pp-radius);
+  padding: 18px;
+}
+.application-proposal h4 {
+  font-weight: 700;
+}
+.application-proposal p {
+  overflow-wrap: anywhere;
+}

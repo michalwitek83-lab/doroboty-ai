@@ -12,7 +12,7 @@ import {
   seniorityLabels,
   contractLabels,
 } from "@/features/jobs/presentation";
-import { currentPerson, jobSchema } from "./model";
+import { currentPerson, jobSchema, MAX_SCREENING_CRITERIA } from "./model";
 import { usePrototype } from "./store";
 import { Field } from "./workspace";
 import { Empty, NotFound, PageTitle } from "./shell";
@@ -76,9 +76,20 @@ export function EmployerJobEditor() {
   const [description, setDescription] = useState(existing?.description ?? "");
   const [source, setSource] = useState(existing?.sourceBrief ?? "");
   const [generated, setGenerated] = useState(existing?.generatedDescription ?? "");
+  const [criteria, setCriteria] = useState(
+    (existing?.screeningCriteria ?? []).map((item) => ({
+      id: item.id,
+      label: item.label,
+      evidence: item.evidence.join(", "),
+    })),
+  );
   const [approved, setApproved] = useState(false);
   const [error, setError] = useState("");
   if (id !== "nowa" && !existing) return <NotFound />;
+  function updateCriterion(index: number, change: Partial<(typeof criteria)[number]>) {
+    setCriteria((rows) => rows.map((row, i) => (i === index ? { ...row, ...change } : row)));
+    setApproved(false);
+  }
   function publish(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
@@ -88,6 +99,22 @@ export function EmployerJobEditor() {
     }
     const data = new FormData(e.currentTarget);
     const newId = existing?.id ?? crypto.randomUUID();
+    const screeningCriteria = criteria
+      .filter((row) => row.label.trim() || row.evidence.trim())
+      .map((row) => ({
+        id: row.id,
+        label: row.label.trim(),
+        evidence: row.evidence
+          .split(",")
+          .map((phrase) => phrase.trim())
+          .filter(Boolean),
+      }));
+    if (screeningCriteria.some((row) => !row.label || !row.evidence.length)) {
+      setError(
+        "Każde kryterium potrzebuje nazwy i co najmniej jednego fragmentu „Po czym poznać”.",
+      );
+      return;
+    }
     const parsed = jobSchema.safeParse({
       id: newId,
       slug: existing?.slug ?? `oferta-${newId}`,
@@ -97,6 +124,7 @@ export function EmployerJobEditor() {
       description,
       sourceBrief: source,
       generatedDescription: generated,
+      screeningCriteria,
       category: data.get("category"),
       function: data.get("function"),
       remoteStatus: data.get("remoteStatus"),
@@ -129,7 +157,7 @@ export function EmployerJobEditor() {
         parsed.data.salaryMin > parsed.data.salaryMax)
     ) {
       setError(
-        "Sprawdź formularz: tytuł, lokalizacja, podsumowanie (min. 10 znaków), opis (min. 30 znaków) i widełki wynagrodzenia.",
+        "Sprawdź formularz: tytuł, lokalizacja, podsumowanie (min. 10 znaków), opis (min. 30 znaków), widełki wynagrodzenia i kryteria (do 10 fragmentów po maks. 80 znaków).",
       );
       return;
     }
@@ -218,6 +246,58 @@ export function EmployerJobEditor() {
             }}
           />
         </Field>
+        <fieldset className="criteria-editor" aria-describedby="criteria-help">
+          <legend>Kryteria screeningu (do {MAX_SCREENING_CRITERIA})</legend>
+          <p id="criteria-help" className="record-caption">
+            Na ich podstawie powstaje karta kandydata i lista „Od kogo zacząć dziś”. W polu „Po czym
+            poznać” wpisz fragmenty słów oddzielone przecinkami, np. „wdroż, produkcj”. Po zmianie
+            kryteriów karta pokaże też poprzednią wersję.
+          </p>
+          {criteria.map((row, index) => (
+            <div className="criteria-row" key={row.id}>
+              <Field label={`Kryterium ${index + 1}`}>
+                <Input
+                  maxLength={200}
+                  value={row.label}
+                  onChange={(e) => updateCriterion(index, { label: e.target.value })}
+                />
+              </Field>
+              <Field label="Po czym poznać">
+                <Input
+                  maxLength={800}
+                  value={row.evidence}
+                  onChange={(e) => updateCriterion(index, { evidence: e.target.value })}
+                />
+              </Field>
+              <Button
+                type="button"
+                variant="outline"
+                aria-label={`Usuń kryterium ${index + 1}`}
+                onClick={() => {
+                  setCriteria((rows) => rows.filter((_, i) => i !== index));
+                  setApproved(false);
+                }}
+              >
+                Usuń
+              </Button>
+            </div>
+          ))}
+          {criteria.length < MAX_SCREENING_CRITERIA && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setCriteria((rows) => [
+                  ...rows,
+                  { id: `criterion-${crypto.randomUUID()}`, label: "", evidence: "" },
+                ]);
+                setApproved(false);
+              }}
+            >
+              Dodaj kryterium
+            </Button>
+          )}
+        </fieldset>
         <div className="grid gap-4 sm:grid-cols-2">
           {(
             [

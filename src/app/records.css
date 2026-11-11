@@ -337,3 +337,150 @@
   border-radius: 10px;
   background: var(--gui-canvas);
 }
+
+/* P1 candidate card and daily shortlist (host adaptation of fact chips and reading sheet). */
+.candidate-card-criteria {
+  display: grid;
+  gap: 14px;
+  margin-block: 16px;
+}
+.candidate-card-criteria > li {
+  border-top: 1px solid var(--pp-line);
+  padding-top: 14px;
+}
+.candidate-card-criterion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.candidate-card-criterion strong {
+  overflow-wrap: anywhere;
+}
+.candidate-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--pp-ink);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--pp-surface);
+}
+.candidate-card-status[data-status="confirmed"] {
+  background: var(--pp-fact);
+}
+.candidate-card-status[data-status="contradicted"] {
+  background: var(--pp-yellow);
+}
+.candidate-card-status[data-status="missing"] {
+  border-style: dashed;
+  color: var(--pp-muted);
+}
+.candidate-card-quote {
+  margin-top: 8px;
+}
+.candidate-card-quote blockquote {
+  border-left: 3px solid var(--pp-ink);
+  padding-left: 12px;
+  overflow-wrap: anywhere;
+}
+.candidate-card-quote figcaption,
+.candidate-card-facts dd span {
+  font-size: 13px;
+  color: var(--pp-muted);
+}
+.candidate-card-facts {
+  display: grid;
+  gap: 14px;
+  border-top: 1px solid var(--pp-line);
+  padding-top: 16px;
+}
+.candidate-card-facts dt {
+  font-weight: 700;
+}
+.candidate-card-facts dd {
+  overflow-wrap: anywhere;
+}
+.candidate-card-previous {
+  margin-top: 32px;
+  border-top: 1px solid var(--pp-ink);
+  padding-top: 24px;
+}
+.daily-shortlists {
+  margin-block: 24px 32px;
+  border: 1px solid var(--pp-ink);
+  border-radius: var(--pp-radius-large);
+  background: var(--pp-surface);
+  padding: 24px;
+}
+.daily-shortlists > h2 {
+  font-family: var(--pp-font-heading);
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+.daily-shortlist {
+  margin-top: 20px;
+}
+.daily-shortlist h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.daily-shortlist ol {
+  display: grid;
+  gap: 12px;
+  list-style: decimal;
+  padding-left: 24px;
+}
+.daily-shortlist li p {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--pp-muted);
+  overflow-wrap: anywhere;
+}
+.daily-shortlist-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+}
+.daily-shortlist-row a {
+  font-weight: 700;
+  text-decoration: underline;
+}
+.daily-shortlist-counts {
+  font-size: 14px;
+}
+.all-applications-title {
+  font-family: var(--pp-font-heading);
+  font-size: 26px;
+  margin-bottom: 12px;
+}
+.criteria-editor {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--pp-line);
+  border-radius: var(--pp-radius);
+  padding: 20px;
+}
+.criteria-editor legend {
+  font-weight: 700;
+  padding-inline: 6px;
+}
+.criteria-row {
+  display: grid;
+  gap: 10px;
+  align-items: end;
+}
+@media (min-width: 768px) {
+  .criteria-row {
+    grid-template-columns: 1fr 1fr auto;
+  }
+}
+@media (max-width: 480px) {
+  .daily-shortlists {
+    padding: 18px 16px;
+  }
+}

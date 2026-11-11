@@ -120,8 +120,8 @@ test("published job → saved offer/draft → submitted application → employer
   const answer = page.getByLabel("Dlaczego pasujesz do tej roli?");
   const draftAnswer =
     "Przeprowadziłam badania z użytkownikami i wdrożyłam automatyzację. Czas obsługi skrócił się o 30%.";
-  await expect(page.getByLabel("Twoje notatki do aplikacji (opcjonalnie)")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Przygotuj propozycję z AI" })).toHaveCount(0);
+  await expect(page.getByLabel("Twoje notatki do aplikacji (opcjonalnie)")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Przygotuj propozycję z AI" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Użyj propozycji" })).toHaveCount(0);
   await answer.fill(draftAnswer);
   await page.getByRole("button", { name: "Zapisz szkic" }).click();
@@ -331,10 +331,11 @@ test("application submission explains short answers and missing approval without
   await expect(page.getByRole("checkbox")).toBeChecked();
   await expect(answer).toHaveValue("krótka odpowiedź");
   await answer.fill("Moje doświadczenie pasuje do odpowiedzialności opisanej w tej ofercie.");
+  // Accepting the terms is not reset by editing the answer; uncheck to test the error.
+  await expect(page.getByRole("checkbox")).toBeChecked();
+  await page.getByRole("checkbox").uncheck();
   await send.click();
-  await expect(page.getByRole("alert")).toHaveText(
-    "Zatwierdź treść aplikacji i jej przesłanie pracodawcy.",
-  );
+  await expect(page.getByRole("alert")).toHaveText("Zaakceptuj regulamin, aby wysłać aplikację.");
   await expect(page.getByRole("checkbox")).toBeFocused();
   await page.getByRole("checkbox").check();
   await send.click();
@@ -342,7 +343,7 @@ test("application submission explains short answers and missing approval without
 });
 
 for (const width of [1440, 375]) {
-  test(`legacy application draft stays compatible without notes or AI controls at ${width}px`, async ({
+  test(`legacy application draft resumes notes and proposal in the assistant at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -370,13 +371,13 @@ for (const width of [1440, 375]) {
     const form = page.locator("main form");
     const answer = page.getByLabel("Dlaczego pasujesz do tej roli?");
     await expect(answer).toHaveValue(draft.answer);
-    await expect(form.getByRole("textbox")).toHaveCount(1);
-    await expect(page.getByLabel("Twoje notatki do aplikacji (opcjonalnie)")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Przygotuj propozycję z AI" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Użyj propozycji" })).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "Propozycja odpowiedzi" })).toHaveCount(0);
-    await expect(page.locator("main")).not.toContainText(draft.notes);
-    await expect(page.locator("main")).not.toContainText(draft.generated);
+    await expect(form.getByRole("textbox")).toHaveCount(2);
+    await expect(page.getByLabel("Twoje notatki do aplikacji (opcjonalnie)")).toHaveValue(
+      draft.notes,
+    );
+    await expect(page.getByRole("heading", { name: "Propozycja odpowiedzi" })).toBeVisible();
+    await expect(page.locator(".application-proposal")).toContainText(draft.generated);
+    await expect(page.getByRole("button", { name: "Użyj propozycji" })).toBeVisible();
     const cvSection = form.getByRole("region", { name: "Twoje CV", exact: true });
     await expect(cvSection).toBeVisible();
     await expect(answer).toBeVisible();
@@ -392,14 +393,16 @@ for (const width of [1440, 375]) {
     await page.keyboard.press("Tab");
     await expect(page.getByRole("checkbox")).toBeFocused();
     await page.keyboard.press("Tab");
+    await expect(
+      page.getByRole("link", { name: "Przeczytaj regulamin", exact: true }),
+    ).toBeFocused();
+    await page.keyboard.press("Tab");
     await expect(page.getByRole("button", { name: "Wyślij aplikację", exact: true })).toBeFocused();
     await page.keyboard.press("Tab");
     await expect(page.getByRole("button", { name: "Zapisz szkic", exact: true })).toBeFocused();
     const editedAnswer = "Moja poprawiona odpowiedź opisuje doświadczenie potrzebne w tej roli.";
     await answer.fill(editedAnswer);
-    await page.keyboard.press("Tab");
-    await page.keyboard.press("Tab");
-    await page.keyboard.press("Tab");
+    for (let i = 0; i < 4; i++) await page.keyboard.press("Tab");
     await page.keyboard.press("Enter");
     await expect(page.getByRole("status")).toHaveText("Szkic został zapisany.");
     expect(
@@ -420,6 +423,7 @@ for (const width of [1440, 375]) {
     await answer.focus();
     await page.keyboard.press("Tab");
     await page.keyboard.press("Space");
+    await page.keyboard.press("Tab");
     await page.keyboard.press("Tab");
     await page.keyboard.press("Enter");
     await expect(page.getByText("Aplikacja została wysłana.", { exact: false })).toBeVisible();
@@ -718,6 +722,8 @@ test("process sheet keeps notes across keyboard tabs and saves stage history wit
     /^\.?\/cv\/marek-nowak-cv-v1\.pdf$/,
   );
   await page.keyboard.press("Home");
+  await expect(page.getByRole("tab", { name: "Karta", exact: true })).toBeFocused();
+  await page.keyboard.press("ArrowRight");
   await expect(answer).toBeFocused();
   await expect(page.getByRole("tabpanel", { name: "Odpowiedź", exact: true })).toContainText(
     "Przesłana aplikacja",
@@ -994,4 +1000,48 @@ test("candidate snapshot supports custom CV and long content at desktop and mobi
   await expect(page.getByRole("tabpanel", { name: "Odpowiedź", exact: true })).toContainText(
     record.answer,
   );
+});
+
+test("P1 shortlist ranks by card, card quotes own text and keeps previous criteria", async ({
+  page,
+}) => {
+  await choose(page, "Karolina Wiśniewska");
+  await page.goto("/#/app/kandydaci");
+  const shortlist = page.getByRole("region", { name: "Od kogo zacząć dziś" });
+  await expect(shortlist.getByRole("listitem")).toHaveCount(5);
+  await expect(shortlist.getByRole("link").first()).toHaveText("Ewa Mazur");
+  await expect(shortlist.getByRole("link", { name: "Jakub Lis", exact: true })).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "Jakub Lis", exact: true }),
+    "the full list still shows everyone",
+  ).toHaveCount(1);
+  await shortlist.getByRole("link", { name: "Natalia Wójcik", exact: true }).click();
+  const card = page.getByRole("tabpanel", { name: "Karta", exact: true });
+  await expect(page.getByRole("tab", { name: "Karta", exact: true })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(card).toContainText("sprzeczne");
+  await expect(card).toContainText("„Nie jestem autorką komponentu indeksowania");
+  await expect(card).toContainText("Źródło: notatki kandydata");
+  await expect(card).not.toContainText("Aplikuję na stanowisko");
+  await expect(card.getByRole("heading", { name: "Poprzednie kryteria" })).toHaveCount(0);
+
+  await page.goto("/#/app/oferty/20000000-0000-4000-8000-000000000001");
+  await page.getByRole("button", { name: "Usuń kryterium 5", exact: true }).click();
+  await page.getByRole("checkbox", { name: "Zatwierdzam treść oferty" }).check();
+  await page.getByRole("button", { name: "Opublikuj ofertę", exact: true }).click();
+  await page.goto("/#/app/kandydaci/application-natalia");
+  await expect(card.getByRole("heading", { name: "Poprzednie kryteria" })).toBeVisible();
+  await expect(card).toContainText("Ocena jakości odpowiedzi AI");
+
+  for (const width of [375, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+  await choose(page, "Marek Nowak");
+  await page.goto("/#/app/aplikacje/application-example");
+  await expect(page.getByRole("tab", { name: "Karta", exact: true })).toHaveCount(0);
 });

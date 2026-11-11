@@ -21,7 +21,10 @@ export function ApplicationRecord({
   statusRef,
   children,
   footer,
+  leadingSections = [],
 }: {
+  /** Role-specific tabs placed before the answer and CV, e.g. the employer's candidate card. */
+  leadingSections?: { value: string; label: string; content: ReactNode }[];
   application: Pick<
     Application,
     "candidateId" | "candidateName" | "jobTitle" | "stage" | "answer" | "cv" | "score" | "summary"
@@ -68,6 +71,7 @@ export function ApplicationRecord({
         <RecordSheet
           label={candidate ? "Twoja wysłana aplikacja" : "Materiały kandydata"}
           sections={[
+            ...leadingSections,
             {
               value: "answer",
               label: "Odpowiedź",

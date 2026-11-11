@@ -1,6 +1,7 @@
 import { z } from "zod";
 import marketplace from "./data/marketplace.json" with { type: "json" };
 import people from "./data/people.json" with { type: "json" };
+import shortlistScenario from "./data/shortlist-scenario.json" with { type: "json" };
 import type { JobWithCompany } from "@/features/jobs/types";
 
 const id = z
@@ -10,7 +11,17 @@ const id = z
   .regex(/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/);
 const shortText = z.string().trim().min(1).max(200);
 const text = z.string().trim().max(12000);
+/** Candidate-authored text is stored exactly as typed: no trimming or normalisation. */
+const verbatimText = z.string().max(12000);
 export const MIN_APPLICATION_ANSWER_LENGTH = 20;
+export const MAX_SCREENING_CRITERIA = 5;
+export const screeningCriterionSchema = z.object({
+  id,
+  label: shortText,
+  evidence: z.array(z.string().trim().min(1).max(80)).min(1).max(10),
+});
+export type ScreeningCriterion = z.infer<typeof screeningCriterionSchema>;
+const criteriaList = z.array(screeningCriterionSchema).max(MAX_SCREENING_CRITERIA);
 const companySchema = z.object({
   id,
   slug: id,
@@ -53,6 +64,9 @@ export const jobSchema = z
     verificationStatus: z.enum(["unverified", "editorial", "employer_verified"]),
     sourceBrief: text.optional(),
     generatedDescription: text.optional(),
+    screeningCriteria: criteriaList.optional(),
+    previousScreeningCriteria: criteriaList.optional(),
+    criteriaChangedAt: z.iso.datetime().optional(),
   })
   .refine(
     (job) =>
@@ -72,6 +86,8 @@ const personSchema = profileSchema.extend({
   cv: text,
   exampleScore: z.number().int().min(0).max(100),
   exampleSummary: text,
+  /** Synthetic scenario applicants that are not offered in the person picker. */
+  pickerHidden: z.boolean().optional(),
 });
 export const stages = [
   "submitted",
@@ -112,9 +128,9 @@ const applicationSchema = z.object({
   jobTitle: shortText,
   candidateName: shortText,
   cv: text.min(20),
-  answer: text.min(MIN_APPLICATION_ANSWER_LENGTH),
-  sourceNotes: text,
-  generatedAnswer: text,
+  answer: verbatimText.refine((value) => value.trim().length >= MIN_APPLICATION_ANSWER_LENGTH),
+  sourceNotes: verbatimText,
+  generatedAnswer: verbatimText,
   score: z.number().int().min(0).max(100),
   summary: text,
   stage: z.enum(stages),
@@ -126,9 +142,9 @@ const applicationSchema = z.object({
 const draftSchema = z.object({
   candidateId: id,
   jobId: id,
-  notes: text,
-  generated: text,
-  answer: text,
+  notes: verbatimText,
+  generated: verbatimText,
+  answer: verbatimText,
 });
 export const stateSchema = z
   .object({
@@ -244,13 +260,46 @@ export function initialState(): State {
     stage: "submitted",
     events: [{ stage: "submitted", at: "2026-11-02T09:00:00.000Z", note: "" }],
   });
+  addShortlistScenario(state);
   return stateSchema.parse(state);
+}
+/** P1 scenario: screening criteria and six synthetic applicants (pickerHidden). */
+function addShortlistScenario(state: State) {
+  const criteria = shortlistScenario.criteria as Record<string, ScreeningCriterion[]>;
+  for (const job of state.jobs) if (criteria[job.slug]) job.screeningCriteria = criteria[job.slug];
+  state.people.push(...shortlistScenario.people.map((person) => personSchema.parse(person)));
+  const job = state.jobs.find((x) => x.slug === "ai-product-manager")!;
+  for (const item of shortlistScenario.applications) {
+    const person = state.people.find((x) => x.id === item.candidateId)!;
+    const notes = item.sourceNotes ?? "";
+    const generated = item.useAssistant ? draftAnswer(person, job.title, notes) : "";
+    state.applications.push({
+      id: `application-${person.id.replace("candidate-", "")}`,
+      candidateId: person.id,
+      jobId: job.id,
+      companyId: job.companyId,
+      jobTitle: job.title,
+      candidateName: person.name,
+      cv: person.cv,
+      answer: item.answer ?? generated,
+      sourceNotes: notes,
+      generatedAnswer: generated,
+      score: person.exampleScore,
+      summary: person.exampleSummary,
+      stage: "submitted",
+      events: [{ stage: "submitted", at: item.submittedAt, note: "" }],
+    });
+  }
 }
 export function publishedJobs(state: State): JobWithCompany[] {
   return state.jobs
     .filter((x) => x.publicationStatus === "published")
     .map((job) => ({ ...job, company: state.companies.find((x) => x.id === job.companyId)! }))
     .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+}
+/** Simulated candidate assistant: a deterministic template, not a provider model. */
+export function draftAnswer(person: Person, title: string, notes: string) {
+  return `Aplikuję na stanowisko ${title}. ${person.headline}.\n\n${person.cv.slice(0, 650)}${notes.trim() ? `\n\n${notes.trim().slice(0, 9000)}` : ""}\n\nChętnie przedstawię sposób pracy i decyzje podjęte w opisanych projektach.`;
 }
 export function currentPerson(state: State) {
   return state.people.find((x) => x.id === state.activePersonId);
@@ -295,7 +344,7 @@ export function transition(
     const p = candidate();
     const job = s.jobs.find((x) => x.id === action.jobId && x.publicationStatus === "published");
     if (!job) return fail("Oferta nie jest dostępna.");
-    if (!action.consent) fail("Zatwierdź treść i zgodę na przesłanie aplikacji.");
+    if (!action.consent) fail("Zaakceptuj regulamin, aby wysłać aplikację.");
     if (s.applications.some((x) => x.candidateId === p.id && x.jobId === job.id))
       fail("Aplikacja na tę ofertę została już wysłana.");
     s.applications.push(
@@ -340,8 +389,23 @@ export function transition(
     const job = jobSchema.parse(action.job);
     if (job.companyId !== p.companyId) fail("Wybierz ofertę własnej firmy.");
     const index = s.jobs.findIndex((x) => x.id === job.id);
+    const before = index >= 0 ? s.jobs[index] : undefined;
+    if (before && before.companyId !== p.companyId) fail("Nie można zmienić tej oferty.");
+    // Criteria history is owned by the domain, never by the submitted form.
+    delete job.previousScreeningCriteria;
+    delete job.criteriaChangedAt;
+    if (before?.previousScreeningCriteria) {
+      job.previousScreeningCriteria = before.previousScreeningCriteria;
+      job.criteriaChangedAt = before.criteriaChangedAt;
+    }
+    if (
+      before?.screeningCriteria?.length &&
+      JSON.stringify(before.screeningCriteria) !== JSON.stringify(job.screeningCriteria ?? [])
+    ) {
+      job.previousScreeningCriteria = before.screeningCriteria;
+      job.criteriaChangedAt = now;
+    }
     if (index >= 0) {
-      if (s.jobs[index].companyId !== p.companyId) fail("Nie można zmienić tej oferty.");
       s.jobs[index] = job;
     } else s.jobs.unshift(job);
   } else if (action.type === "company") {

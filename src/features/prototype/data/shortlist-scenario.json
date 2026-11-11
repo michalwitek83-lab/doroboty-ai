@@ -1,0 +1,164 @@
+{
+  "criteria": {
+    "ai-product-manager": [
+      {
+        "id": "apm-production",
+        "label": "Wdrożenie AI do realnego użycia",
+        "evidence": ["wdroż", "produkcj"]
+      },
+      {
+        "id": "apm-research",
+        "label": "Badania z użytkownikami",
+        "evidence": ["badani", "badań", "wywiad"]
+      },
+      {
+        "id": "apm-outcome",
+        "label": "Mierzalny wynik",
+        "evidence": ["%", "skrócił", "spadł", "wzrosł"]
+      },
+      {
+        "id": "apm-ownership",
+        "label": "Własna część pracy, nie samo demo",
+        "evidence": [
+          "samodzieln",
+          "poprowadził",
+          "odpowiadał",
+          "zbudował",
+          "zaprojektował",
+          "autor"
+        ]
+      },
+      {
+        "id": "apm-evaluation",
+        "label": "Ocena jakości odpowiedzi AI",
+        "evidence": ["ewaluac", "jakości odpowiedzi", "zestaw testowy", "metryk"]
+      }
+    ],
+    "staff-ai-engineer": [
+      {
+        "id": "sae-production",
+        "label": "System AI utrzymywany na produkcji",
+        "evidence": ["produkcj", "utrzym", "monitor"]
+      },
+      {
+        "id": "sae-evaluation",
+        "label": "Ewaluacja modeli",
+        "evidence": ["ewaluac", "metryk", "zestaw testowy"]
+      },
+      {
+        "id": "sae-ownership",
+        "label": "Własna część architektury",
+        "evidence": ["zaprojektował", "zbudował", "odpowiadał", "autor"]
+      }
+    ]
+  },
+  "people": [
+    {
+      "id": "candidate-ewa",
+      "role": "candidate",
+      "pickerHidden": true,
+      "name": "Ewa Mazur",
+      "headline": "Product Manager · narzędzia sprzedażowe",
+      "bio": "Kandydat lub kandydatka syntetycznego scenariusza krótkiej listy (dane fikcyjne).",
+      "location": "Warszawa",
+      "cv": "Ewa Mazur — Product Manager 2021–2026: narzędzia dla zespołów sprzedaży. Wcześniej analityczka biznesowa w firmie logistycznej.",
+      "exampleScore": 54,
+      "exampleSummary": "Doświadczenie w narzędziach dla zespołów sprzedaży i analizie biznesowej. Warto dopytać o skalę wdrożenia."
+    },
+    {
+      "id": "candidate-jakub",
+      "role": "candidate",
+      "pickerHidden": true,
+      "name": "Jakub Lis",
+      "headline": "Product Manager · software house",
+      "bio": "Kandydat lub kandydatka syntetycznego scenariusza krótkiej listy (dane fikcyjne).",
+      "location": "Kraków",
+      "cv": "Jakub Lis — Product Manager w software house 2020–2026. Odpowiedzialny za roadmapę i komunikację z interesariuszami. Certyfikaty z zarządzania produktem.",
+      "exampleScore": 91,
+      "exampleSummary": "Doświadczenie w zarządzaniu roadmapą i współpracy z interesariuszami w software house. Dobra znajomość procesu produktowego."
+    },
+    {
+      "id": "candidate-natalia",
+      "role": "candidate",
+      "pickerHidden": true,
+      "name": "Natalia Wójcik",
+      "headline": "Product Designer → Product Manager",
+      "bio": "Kandydat lub kandydatka syntetycznego scenariusza krótkiej listy (dane fikcyjne).",
+      "location": "Wrocław",
+      "cv": "Natalia Wójcik — Product Designer 2019–2024, Product Manager 2024–2026. Asystent wyszukiwania w bazie wiedzy dla działu obsługi klienta.",
+      "exampleScore": 58,
+      "exampleSummary": "Przejście z projektowania do zarządzania produktem, asystent wyszukiwania dla obsługi klienta. Warto dopytać o zakres decyzji produktowych."
+    },
+    {
+      "id": "candidate-pawel",
+      "role": "candidate",
+      "pickerHidden": true,
+      "name": "Paweł Zieliński",
+      "headline": "Product Owner",
+      "bio": "Kandydat lub kandydatka syntetycznego scenariusza krótkiej listy (dane fikcyjne).",
+      "location": "Gdańsk",
+      "cv": "Paweł Zieliński — Product Owner 2022–2026. Praca z zespołami developerskimi w modelu Scrum.",
+      "exampleScore": 66,
+      "exampleSummary": "Doświadczenie Product Ownera w zespołach scrumowych. Odpowiedź ogólna, mało szczegółów o projektach."
+    },
+    {
+      "id": "candidate-olga",
+      "role": "candidate",
+      "pickerHidden": true,
+      "name": "Olga Krawczyk",
+      "headline": "Product Manager · bankowość mobilna",
+      "bio": "Kandydat lub kandydatka syntetycznego scenariusza krótkiej listy (dane fikcyjne).",
+      "location": "Warszawa",
+      "cv": "Olga Krawczyk — Product Manager 2020–2026: aplikacja mobilna banku detalicznego.",
+      "exampleScore": 79,
+      "exampleSummary": "Doświadczenie w bankowości mobilnej i rekomendacjach produktowych. Warto dopytać o udział AI w rozwiązaniu."
+    },
+    {
+      "id": "candidate-adam",
+      "role": "candidate",
+      "pickerHidden": true,
+      "name": "Adam Wróbel",
+      "headline": "Senior Product Manager · SaaS",
+      "bio": "Kandydat lub kandydatka syntetycznego scenariusza krótkiej listy (dane fikcyjne).",
+      "location": "Poznań",
+      "cv": "Adam Wróbel — Senior Product Manager 2018–2026: platforma SaaS do obsługi zgłoszeń z funkcjami AI.",
+      "exampleScore": 88,
+      "exampleSummary": "Długie doświadczenie w SaaS i funkcjach AI dla obsługi zgłoszeń. Mocne dopasowanie do opisu roli."
+    }
+  ],
+  "applications": [
+    {
+      "candidateId": "candidate-natalia",
+      "submittedAt": "2026-11-03T08:40:00.000Z",
+      "sourceNotes": "Prowadziłam wywiady z 12 osobami z działu obsługi klienta. Zaprojektowałam przepływ przekazania rozmowy do konsultanta. Nie jestem autorką komponentu indeksowania, zbudował go zespół danych. Po wdrożeniu na produkcję czas odpowiedzi spadł o 18%.",
+      "useAssistant": true
+    },
+    {
+      "candidateId": "candidate-jakub",
+      "submittedAt": "2026-11-03T11:15:00.000Z",
+      "sourceNotes": "Interesuję się AI i chcę rozwijać nowoczesne produkty.",
+      "useAssistant": true
+    },
+    {
+      "candidateId": "candidate-adam",
+      "submittedAt": "2026-11-04T09:05:00.000Z",
+      "answer": "Odpowiadałem za roadmapę produktu z funkcjami AI w platformie do obsługi zgłoszeń. Nie prowadziłem badań z użytkownikami, robił je zespół UX. Po wdrożeniu na produkcję liczba eskalacji spadła o 12%."
+    },
+    {
+      "candidateId": "candidate-olga",
+      "submittedAt": "2026-11-05T14:30:00.000Z",
+      "sourceNotes": "Prowadziłam badania z klientami aplikacji bankowej. Wprowadziliśmy rekomendacje produktów, a konwersja wzrosła o 9%.",
+      "useAssistant": true
+    },
+    {
+      "candidateId": "candidate-ewa",
+      "submittedAt": "2026-11-06T10:00:00.000Z",
+      "answer": "Samodzielnie poprowadziłam wdrożenie asystenta AI dla zespołu sprzedaży, od pomysłu do produkcji. Przed startem przeprowadziłam 15 wywiadów z handlowcami. Przygotowałam zestaw testowy 200 pytań do oceny jakości odpowiedzi. Po trzech miesiącach czas przygotowania oferty skrócił się o 30%."
+    },
+    {
+      "candidateId": "candidate-pawel",
+      "submittedAt": "2026-11-07T16:20:00.000Z",
+      "answer": "Jestem zainteresowany tą rolą i chętnie porozmawiam o szczegółach współpracy."
+    }
+  ]
+}

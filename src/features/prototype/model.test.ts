@@ -31,9 +31,9 @@ describe("coherent browser scenario", () => {
       answer: "Approved application with sufficient context.",
       consent: false,
     };
-    expect(() => transition(s, input, time)).toThrow("Zatwierdź");
+    expect(() => transition(s, input, time)).toThrow("regulamin");
     expect(() => transition(submitted(), { ...input, consent: true }, time)).toThrow("już wysłana");
-    expect(s.applications).toHaveLength(1);
+    expect(s.applications).toHaveLength(initialState().applications.length);
   });
   it("preserves approved sources while profile and notes evolve", () => {
     const s = submitted();

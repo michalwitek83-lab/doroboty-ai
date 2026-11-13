@@ -25,7 +25,15 @@ The production-readiness audit (`docs/production-readiness.html`, audit 2026-11-
 - Full gate: push the branch and open a PR to `main`, so CI runs `./scripts/verify` on Node 24 with Chromium.
 - Docs: Vercel setup/rollback in `docs/release-smoke-check.md` (Hobby Instant Rollback returns only to the previous production deployment and disables auto-assignment until a deployment is promoted, per Vercel docs checked 2026-11-11) and `docs/incident-plan.md`.
 
-## Scope and acceptance criteria
+## Third round: deployment audit (2026-11-13)
+
+Production audit of https://doroboty-ai-three.vercel.app (main @ 4a69aea, with PostHog EU analytics from PR #2/#3). Open items and the agreed fixes:
+
+- Error observability: browser errors were not recorded anywhere. Fix: PostHog `capture_exceptions: true` plus `reportError()` from the crash screen's `componentDidCatch` (errors caught by React never reach the global handlers). No-op where analytics is off. After deployment, trigger a safe test crash on production and confirm the event in PostHog → Error tracking (owner).
+- Alerts: nothing checks that the live address answers. Fix: uptime-monitor setup steps in `docs/incident-plan.md`; the owner creates the monitor and confirms a test notification.
+- Smoke check row 3 still expected no third-party requests; it now allows the PostHog EU hosts.
+- Data lifecycle: the owner kept PostHog unchanged (identifier cookie/localStorage, element text not masked, no consent banner); recorded as accepted risk. Retention in PostHog is still to be set or confirmed by the owner. Not legal advice.
+- Work done in a separate worktree on branch `fix/readiness-error-tracking` because another session was editing files in the main checkout.
 
 - `.gitattributes` forces LF for text files; working-tree files are converted CRLF→LF in place without discarding uncommitted work. `./scripts/verify` formatting, kit and packet checks no longer fail because of line endings. The immutable kit returns to its committed bytes.
 - The readiness report is excluded from Prettier (generated file).

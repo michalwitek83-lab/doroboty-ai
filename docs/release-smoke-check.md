@@ -27,16 +27,16 @@ The demo owner (repository owner, who publishes and reads `support@doroboty.ai`)
 
 Use a fresh private browser window, so there is no earlier local save. Then repeat the first three checks on a phone or at a narrow window width (390px).
 
-| #   | Check                                                                                                                                        | Stop if it fails |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| 1   | The address opens over HTTPS without certificate warnings. The home page shows the listing entry and the footer shows `support@doroboty.ai`. | Yes              |
-| 2   | Open `/#/oferty`, then open one offer. Copy the offer URL into a new tab: the same offer loads (hash deep link, no 404).                     | Yes              |
-| 3   | DevTools Console has no red errors on the home, listing and offer pages. Network shows no requests to hosts other than the demo address.     | Yes              |
-| 4   | Choose a candidate persona, open an offer, click "Aplikuj". The form shows the demo-data warning. Write an answer, accept terms, submit.     | Yes              |
-| 5   | Reload the page: the submitted application is still listed under "Moje aplikacje".                                                           | Yes              |
-| 6   | Switch to an employer persona: the application is visible under "Kandydaci"; move it to the next stage and reload.                           | Yes              |
-| 7   | Settings: "Eksportuj dane" downloads a JSON file; "Resetuj scenariusz" asks for confirmation and restores the baseline.                      | No, report it    |
-| 8   | The fonts and the illustration load (no fallback serif, no broken image).                                                                    | No, report it    |
+| #   | Check                                                                                                                                                                                                                       | Stop if it fails |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| 1   | The address opens over HTTPS without certificate warnings. The home page shows the listing entry and the footer shows `support@doroboty.ai`.                                                                                | Yes              |
+| 2   | Open `/#/oferty`, then open one offer. Copy the offer URL into a new tab: the same offer loads (hash deep link, no 404).                                                                                                    | Yes              |
+| 3   | DevTools Console has no red errors on the home, listing and offer pages. Network shows requests only to the demo address and PostHog EU (`eu.i.posthog.com`, `eu-assets.i.posthog.com`); PostHog event requests return 200. | Yes              |
+| 4   | Choose a candidate persona, open an offer, click "Aplikuj". The form shows the demo-data warning. Write an answer, accept terms, submit.                                                                                    | Yes              |
+| 5   | Reload the page: the submitted application is still listed under "Moje aplikacje".                                                                                                                                          | Yes              |
+| 6   | Switch to an employer persona: the application is visible under "Kandydaci"; move it to the next stage and reload.                                                                                                          | Yes              |
+| 7   | Settings: "Eksportuj dane" downloads a JSON file; "Resetuj scenariusz" asks for confirmation and restores the baseline.                                                                                                     | No, report it    |
+| 8   | The fonts and the illustration load (no fallback serif, no broken image).                                                                                                                                                   | No, report it    |
 
 Record the result (date, published address, commit, who ran it, pass/fail per check) in the release notes or in the readiness report.
 

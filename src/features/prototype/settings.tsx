@@ -157,9 +157,9 @@ export function PrivacyPage() {
         </p>
         <p>
           Opublikowana wersja korzysta z PostHog do anonimowej analityki: zapisuje odwiedzane
-          ekrany, kliknięcia elementów interfejsu i podstawowe dane techniczne przeglądarki. Treści
-          wpisywane w pola formularzy ani parametry wyszukiwania nie są wysyłane. PostHog zapisuje w
-          przeglądarce anonimowy identyfikator.
+          ekrany, kliknięcia elementów interfejsu, techniczne informacje o błędach aplikacji i
+          podstawowe dane techniczne przeglądarki. Treści wpisywane w pola formularzy ani parametry
+          wyszukiwania nie są wysyłane. PostHog zapisuje w przeglądarce anonimowy identyfikator.
         </p>
         <p>
           Możesz usunąć zmiany przyciskiem „Resetuj scenariusz” w ustawieniach lub wyczyścić dane

@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-import type { CaptureResult } from "posthog-js";
-import { isAnalyticsHost, sanitizeEvent, stripHashQuery } from "./analytics";
+import { describe, expect, it, vi } from "vitest";
+import posthog, { type CaptureResult } from "posthog-js";
+import { isAnalyticsHost, reportError, sanitizeEvent, stripHashQuery } from "./analytics";
 
 describe("analytics host guard", () => {
   it("stays off for local and test hosts", () => {
@@ -40,5 +40,14 @@ describe("analytics URL sanitising", () => {
     expect(result?.properties.$pathname).toBe("/");
     expect(result?.$set_once?.$initial_current_url).toBe("https://x.app/#/oferty");
     expect(sanitizeEvent(null)).toBeNull();
+  });
+});
+
+describe("error reporting", () => {
+  it("sends nothing while analytics is not initialised (local, tests)", () => {
+    const capture = vi.spyOn(posthog, "captureException");
+    reportError(new Error("test"), "crash-recovery");
+    expect(capture).not.toHaveBeenCalled();
+    capture.mockRestore();
   });
 });

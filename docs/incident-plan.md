@@ -5,7 +5,21 @@ Short, provider-specific steps for the public DoRoboty.ai demo on Vercel Hobby. 
 ## Owner and signals
 
 - **Owner:** the repository owner. They own the Vercel project (can roll back and promote) and read `support@doroboty.ai`.
-- **How problems arrive:** emails to `support@doroboty.ai` (shown in the footer, Settings and the crash screen), failed Vercel builds (Vercel emails the project owner), or the owner's own post-publish smoke check. There is no automated error reporting by design.
+- **How problems arrive:** the uptime monitor (address down or paused), PostHog error tracking (errors in visitors' browsers), failed Vercel builds (Vercel emails the project owner), emails to `support@doroboty.ai` (footer, Settings, crash screen) and the owner's post-publish smoke check.
+
+## Availability monitoring
+
+Vercel emails the owner about failed deployments, but nothing on Vercel Hobby checks that the live address answers. Set up a free external uptime check once:
+
+1. Create an account with an uptime monitoring service (for example UptimeRobot; check its current free-plan terms).
+2. Add an **HTTP(s)** monitor (a **keyword** monitor is better: expect the text `DoRoboty.ai`, which is in the page title) for `https://doroboty-ai-three.vercel.app/`, checked every 5 minutes.
+3. Set the alert contact to the owner's email and send a **test notification**; confirm it arrives.
+
+The check loads only the 0.6 KB HTML page, so it does not run the app or send PostHog events. It detects an unavailable or paused project, not a broken page after load; those show up in PostHog error tracking (below) and the post-publish smoke check.
+
+## Error tracking
+
+On the published site PostHog captures unhandled errors and promise rejections (`capture_exceptions`), and the crash screen reports errors it catches (`reportError`). Look in PostHog → Error tracking. Only technical error details are sent; form contents and scenario data are not attached. Nothing is sent from local development or tests.
 
 ## When something is wrong
 

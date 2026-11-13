@@ -57,6 +57,17 @@ export function initAnalytics(): void {
     person_profiles: "identified_only",
     mask_all_text: false,
     session_recording: { maskAllInputs: true },
+    // Unhandled errors and promise rejections; errors caught by the crash screen are sent via reportError.
+    capture_exceptions: true,
     before_send: sanitizeEvent,
   });
+}
+
+/**
+ * Sends a caught error to PostHog error tracking. No-op where analytics is off (local, tests).
+ * Only the error itself is sent; never pass form contents or scenario data as properties.
+ */
+export function reportError(error: unknown, source: string): void {
+  if (!posthog.__loaded) return;
+  posthog.captureException(error, { source });
 }

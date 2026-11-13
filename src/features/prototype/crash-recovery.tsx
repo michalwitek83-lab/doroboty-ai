@@ -2,6 +2,7 @@ import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { downloadText } from "./download";
 import { STORAGE_KEY } from "./storage";
+import { reportError } from "@/lib/analytics";
 
 /** Temporary public support address (decision 2026-11-11, docs/tasks/production-readiness-fixes.md). */
 export const SUPPORT_EMAIL = "support@doroboty.ai";
@@ -123,8 +124,8 @@ interface CrashState {
 }
 
 /**
- * Local-only render error boundary. It shows recovery actions instead of a blank page and sends
- * nothing anywhere; React's own development warning is the only console output.
+ * Render error boundary. It shows local recovery actions instead of a blank page and reports the
+ * caught error to PostHog error tracking on the published site (nothing is sent locally or in tests).
  */
 export class CrashRecovery extends Component<Props, CrashState> {
   state: CrashState = { failed: false, key: this.props.resetKey };
@@ -133,6 +134,9 @@ export class CrashRecovery extends Component<Props, CrashState> {
   }
   static getDerivedStateFromProps(props: Props, state: CrashState): Partial<CrashState> | null {
     return props.resetKey !== state.key ? { failed: false, key: props.resetKey } : null;
+  }
+  componentDidCatch(error: Error) {
+    reportError(error, "crash-recovery");
   }
   render() {
     if (this.state.failed) return <CrashScreen onRetry={() => this.setState({ failed: false })} />;

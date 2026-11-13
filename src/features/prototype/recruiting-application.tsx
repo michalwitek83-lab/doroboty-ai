@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { CandidateCardPanel } from "@/features/shortlist/candidate-card";
 import { ApplicationRecord } from "./application-record";
 import { nextStages, stageLabels, type Application } from "./model";
 import { usePrototype } from "./store";
@@ -29,6 +30,18 @@ export function RecruitingApplication({ application }: { application: Applicatio
         audience="employer"
         history={application.events}
         statusRef={statusRef}
+        leadingSections={[
+          {
+            value: "card",
+            label: "Karta",
+            content: (
+              <CandidateCardPanel
+                job={state.jobs.find((item) => item.id === application.jobId)}
+                application={application}
+              />
+            ),
+          },
+        ]}
         footer={
           availableStages.length > 0 ? (
             <>

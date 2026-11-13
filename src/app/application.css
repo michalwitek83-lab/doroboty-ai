@@ -166,6 +166,11 @@
 .application-form p {
   overflow-wrap: anywhere;
 }
+/* Demo-data warning reuses the host Notice surface inside the form intro. */
+.application-form-intro .application-demo-note {
+  margin: 14px 0 0;
+  color: var(--foreground);
+}
 .application-form-section {
   border-top: 1px solid var(--pp-line);
   padding-block: 24px;
@@ -298,4 +303,21 @@
 .application-actions .application-send:disabled {
   background: var(--gui-color-1);
   color: var(--gui-text);
+}
+.application-assistant {
+  display: grid;
+  gap: 14px;
+}
+.application-proposal {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--pp-line);
+  border-radius: var(--pp-radius);
+  padding: 18px;
+}
+.application-proposal h4 {
+  font-weight: 700;
+}
+.application-proposal p {
+  overflow-wrap: anywhere;
 }

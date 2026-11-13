@@ -18,6 +18,7 @@ import { BrandMark } from "@/features/public/brand-mark";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { currentPerson } from "./model";
 import { usePrototype } from "./store";
+import { CrashRecovery, SUPPORT_EMAIL } from "./crash-recovery";
 import { cn } from "@/lib/utils";
 const navigation = [
   { to: "/oferty", label: "Oferty" },
@@ -67,7 +68,7 @@ const employerNav = [
   ["/app/organizacja", "Organizacja", Building2],
 ] as const;
 export function Shell() {
-  const { state, issue, error, clearError } = usePrototype();
+  const { state, issue, error, clearError, otherTab } = usePrototype();
   const person = currentPerson(state);
   const { pathname } = useLocation();
   const workspace = pathname.startsWith("/app") && person;
@@ -99,6 +100,15 @@ export function Shell() {
             </Link>
           </Notice>
         )}
+        {otherTab && (
+          <Notice>
+            Dane demo zmieniono w innej karcie. Ta karta nie zapisuje już zmian, żeby ich nie
+            nadpisać. Odśwież stronę, aby kontynuować z aktualnymi danymi.{" "}
+            <button type="button" className="underline" onClick={() => window.location.reload()}>
+              Odśwież stronę
+            </button>
+          </Notice>
+        )}
       </>
       {error && (
         <p className="prototype-error" role="alert">
@@ -106,7 +116,9 @@ export function Shell() {
         </p>
       )}
       <div key={`${state.activePersonId}:${pathname}`}>
-        <Outlet />
+        <CrashRecovery resetKey={pathname}>
+          <Outlet />
+        </CrashRecovery>
       </div>
     </>
   );
@@ -290,6 +302,15 @@ export function Shell() {
                   Praca dla ludzi, którzy potrafią z AI zbudować coś wartościowego — nie tylko
                   wpisać je do CV.
                 </p>
+                <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted-foreground">
+                  To publiczne demo z przykładowymi danymi. Nie wpisuj prawdziwych danych osobowych.
+                </p>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Zgłoś problem:{" "}
+                  <a className="underline" href={`mailto:${SUPPORT_EMAIL}`}>
+                    {SUPPORT_EMAIL}
+                  </a>
+                </p>
               </div>
               <nav
                 aria-label="Stopka"
@@ -298,6 +319,7 @@ export function Shell() {
                 <Link to="/oferty">Oferty</Link>
                 <Link to="/metodologia">Metodologia</Link>
                 <Link to="/polityka-prywatnosci">Prywatność</Link>
+                <Link to="/regulamin">Regulamin</Link>
                 <Link className="inline-flex items-center gap-1" to="/auth/sign-in">
                   Strefa case <ArrowUpRight className="size-4" />
                 </Link>

@@ -1042,3 +1042,7 @@ code {
     padding: var(--gui-space-m);
   }
 }
+.crash-recovery .crash-reset {
+  display: grid;
+  gap: var(--gui-space-s);
+}

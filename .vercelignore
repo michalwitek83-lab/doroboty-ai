@@ -1,0 +1,19 @@
+# Upload only what the static Vite build needs. Case history, instructor
+# material, local tool state and test output stay off Vercel.
+/*
+!/index.html
+!/package.json
+!/package-lock.json
+!/.nvmrc
+!/tsconfig.json
+!/vite.config.ts
+!/tokens.css
+!/src
+!/public
+!/docs
+/docs/*
+!/docs/design-system
+/docs/design-system/*
+!/docs/design-system/agent-kit
+/docs/design-system/agent-kit/*
+!/docs/design-system/agent-kit/assets

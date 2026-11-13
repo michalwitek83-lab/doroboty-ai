@@ -4,17 +4,8 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { usePrototype } from "./store";
 import { serializeState, MAX_IMPORT_BYTES } from "./storage";
 import { PageTitle } from "./shell";
-
-export function downloadText(name: string, text: string, type = "application/json") {
-  const url = URL.createObjectURL(new Blob([text], { type }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
+import { downloadText } from "./download";
+import { SupportContact } from "./crash-recovery";
 export function SettingsPage() {
   const { state, reset, importState, original } = usePrototype();
   const [pending, setPending] = useState<"reset" | "import" | null>(null);
@@ -100,6 +91,10 @@ export function SettingsPage() {
           przygotowany scenariusz; nie oceniają kompetencji. Używaj przykładowych danych i CV.
         </p>
       </section>
+      <section className="prototype-panel prototype-form mt-6">
+        <h2>Zgłoś problem</h2>
+        <SupportContact />
+      </section>
       <ConfirmDialog
         open={pending !== null}
         onOpenChange={(v) => {
@@ -112,6 +107,38 @@ export function SettingsPage() {
         onConfirm={confirm}
       />
     </>
+  );
+}
+export function TermsPage() {
+  return (
+    <section className="prototype-section max-w-4xl">
+      <h1>Regulamin serwisu DoRoboty.ai</h1>
+      <p className="mt-4 text-muted-foreground">
+        Szkic na potrzeby prototypu. To nie jest dokument prawny. Ostateczną treść przygotuje
+        właściciel serwisu.
+      </p>
+      <div className="mt-6 space-y-5">
+        <p>Wysyłając aplikację, kandydat akceptuje regulamin. Planowane zgody obejmą:</p>
+        <ul className="list-disc space-y-2 pl-6">
+          <li>
+            przetwarzanie odpowiedzi, notatek do aplikacji, profilu i CV w celu przeprowadzenia
+            rekrutacji;
+          </li>
+          <li>
+            zapisanie notatek i odpowiedzi dokładnie w takiej postaci, w jakiej kandydat je wpisał,
+            także gdy korzysta z asystenta;
+          </li>
+          <li>
+            pokazanie pracodawcy karty kandydata z cytatami z tych materiałów, porównanymi z
+            kryteriami ogłoszenia.
+          </li>
+        </ul>
+        <p>
+          W prototypie wszystkie dane zostają w tej przeglądarce. Nie wpisuj prawdziwych danych
+          osobowych.
+        </p>
+      </div>
+    </section>
   );
 }
 export function PrivacyPage() {

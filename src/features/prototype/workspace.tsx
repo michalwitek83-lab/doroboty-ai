@@ -10,12 +10,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { JobCard } from "@/features/jobs/job-card";
 import { ApplicationOfferPreview } from "@/features/jobs/application-offer-preview";
 import { usePrototype } from "./store";
-import { currentPerson, publishedJobs, stageLabels, MIN_APPLICATION_ANSWER_LENGTH } from "./model";
+import {
+  currentPerson,
+  draftAnswer,
+  publishedJobs,
+  stageLabels,
+  MIN_APPLICATION_ANSWER_LENGTH,
+} from "./model";
 import { PageTitle, Empty, NotFound, Notice } from "./shell";
 import { CvAttachment } from "./cv-attachment";
 import { MatchScore } from "./match-score";
 import { RecruitingApplication } from "./recruiting-application";
 import { CandidateApplication } from "./candidate-application";
+import { DailyShortlists } from "@/features/shortlist/candidate-card";
 
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -33,8 +40,8 @@ export function PersonPicker() {
   const audience = params.get("audience");
   const people =
     audience === "candidate" || audience === "employer"
-      ? state.people.filter((person) => person.role === audience)
-      : state.people;
+      ? state.people.filter((person) => person.role === audience && !person.pickerHidden)
+      : state.people.filter((person) => !person.pickerHidden);
   const safeNext = next && /^\/(?!\/)/.test(next) && !next.startsWith("/auth") ? next : null;
   return (
     <section className="prototype-section max-w-4xl">
@@ -236,8 +243,9 @@ export function ApplyPage() {
   const navigate = useNavigate();
   const job = publishedJobs(state).find((x) => x.slug === slug);
   const draft = state.drafts.find((x) => x.jobId === job?.id && x.candidateId === person.id);
-  const notes = draft?.notes ?? "";
-  const generated = draft?.generated ?? "";
+  const [notes, setNotes] = useState(draft?.notes ?? "");
+  const [generated, setGenerated] = useState(draft?.generated ?? "");
+  const [proposalVisible, setProposalVisible] = useState(Boolean(draft?.generated));
   const [answer, setAnswer] = useState(draft?.answer ?? "");
   const [consent, setConsent] = useState(false);
   const [message, setMessage] = useState("");
@@ -311,6 +319,10 @@ export function ApplyPage() {
             <p>
               Aplikujesz jako <strong>{person.name}</strong>.
             </p>
+            <p className="prototype-notice application-demo-note">
+              To publiczne demo z przykładowymi danymi. Nie wpisuj prawdziwych danych osobowych —
+              aplikacja nie trafia do żadnego pracodawcy i zostaje tylko w tej przeglądarce.
+            </p>
           </header>
           <section className="application-form-section" aria-labelledby="application-cv-title">
             <h3 id="application-cv-title">Twoje CV</h3>
@@ -321,6 +333,64 @@ export function ApplyPage() {
               layout="row"
               contextLabel="CV z Twojego profilu"
             />
+          </section>
+          <section
+            className="application-form-section application-assistant"
+            aria-labelledby="application-assistant-title"
+          >
+            <h3 id="application-assistant-title">Asystent odpowiedzi</h3>
+            <Field label="Twoje notatki do aplikacji (opcjonalnie)">
+              <Textarea
+                disabled={submitted}
+                maxLength={12000}
+                value={notes}
+                aria-describedby="application-notes-help"
+                placeholder="Co z Twojego doświadczenia jest ważne dla tej roli?"
+                onChange={(e) => {
+                  setNotes(e.target.value);
+                  // Hide the stale proposal, but keep it stored: it marks that the
+                  // assistant was used, so the card reads notes, not the answer.
+                  setProposalVisible(false);
+                  setMessage("");
+                }}
+              />
+            </Field>
+            <p id="application-notes-help" className="application-help">
+              Zapisujemy notatki dokładnie tak, jak je wpiszesz. Jeśli przygotujesz propozycję z AI,
+              pracodawca zobaczy na karcie kandydata cytaty z tych notatek. Jeśli napiszesz
+              odpowiedź bez asystenta, cytaty będą pochodzić z odpowiedzi.
+            </p>
+            <div>
+              <Button
+                variant="outline"
+                type="button"
+                disabled={submitted}
+                onClick={() => {
+                  setGenerated(draftAnswer(person, job.title, notes));
+                  setProposalVisible(true);
+                  setMessage("");
+                }}
+              >
+                Przygotuj propozycję z AI
+              </Button>
+            </div>
+            {generated && proposalVisible && (
+              <section
+                className="application-proposal"
+                aria-labelledby="application-proposal-title"
+              >
+                <h4 id="application-proposal-title">Propozycja odpowiedzi</h4>
+                <p className="whitespace-pre-wrap">{generated}</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={submitted}
+                  onClick={() => setAnswer(generated)}
+                >
+                  Użyj propozycji
+                </Button>
+              </section>
+            )}
           </section>
           <section
             className="application-form-section application-answer"
@@ -336,10 +406,7 @@ export function ApplyPage() {
                 aria-invalid={answerInvalid || undefined}
                 aria-describedby="application-answer-help"
                 value={answer}
-                onChange={(e) => {
-                  setAnswer(e.target.value);
-                  setConsent(false);
-                }}
+                onChange={(e) => setAnswer(e.target.value)}
               />
             </Field>
             <p
@@ -361,15 +428,20 @@ export function ApplyPage() {
                 onCheckedChange={(v) => setConsent(v)}
                 aria-invalid={consentInvalid || undefined}
                 aria-describedby={consentInvalid ? "application-consent-error" : undefined}
-                aria-label="Zatwierdzam treść i przesłanie aplikacji"
+                aria-label="Akceptuję regulamin serwisu DoRoboty.ai"
               />
-              <span>
-                Zatwierdzam treść aplikacji i przesłanie profilu oraz przykładowego CV pracodawcy.
-              </span>
+              <span>Akceptuję regulamin serwisu DoRoboty.ai.</span>
             </label>
+            <p className="application-help">
+              <Link to="/regulamin" target="_blank" rel="noopener">
+                Przeczytaj regulamin
+              </Link>{" "}
+              (otworzy się w nowej karcie). Pracodawca zobaczy kartę kandydata z cytatami z Twojej
+              odpowiedzi lub notatek oraz z CV.
+            </p>
             {consentInvalid && (
               <p id="application-consent-error" className="error-message" role="alert">
-                Zatwierdź treść aplikacji i jej przesłanie pracodawcy.
+                Zaakceptuj regulamin, aby wysłać aplikację.
               </p>
             )}
             <div className="application-actions">
@@ -430,6 +502,8 @@ export function ApplicationsPage({ employer = false }: { employer?: boolean }) {
           <CheckCircle2 className="inline size-5" /> Aplikacja została wysłana.
         </Notice>
       )}
+      {employer && <DailyShortlists state={state} companyId={person.companyId} />}
+      {employer && <h2 className="all-applications-title">Wszystkie aplikacje</h2>}
       <Field label={employer ? "Szukaj kandydata lub oferty" : "Szukaj oferty"}>
         <Input value={query} onChange={(e) => setQuery(e.target.value)} />
       </Field>

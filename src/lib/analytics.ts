@@ -1,9 +1,9 @@
 import posthog, { type CaptureResult } from "posthog-js";
 
-// Public, write-only project token for the PostHog US Cloud project. PostHog
+// Public, write-only project token for the PostHog EU Cloud project. PostHog
 // project tokens are meant to ship in browser code; this is not a secret.
-const POSTHOG_TOKEN = "phc_kxi4ToCPp6Kp9aTvSDcCDTtF6DbVzA5zizXHtrkDjT6f";
-const POSTHOG_HOST = "https://us.i.posthog.com";
+const POSTHOG_TOKEN = "phc_ovsUwVF9KEQ6BiHqnBNTt5UJ4aNtBVkHfHe8MrtkEaA7";
+const POSTHOG_HOST = "https://eu.i.posthog.com";
 
 const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
 

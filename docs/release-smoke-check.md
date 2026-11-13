@@ -6,12 +6,18 @@ Run this right after publishing a static build of the prototype, before sharing 
 
 Hosting decision (2026-11-11): Vercel Hobby plan, public non-commercial demo, up to about 1,000 visits per month, no paid usage. A full first visit transfers about 16 MB, so 1,000 visits stay far below the Hobby 100 GB monthly transfer. If a Hobby limit is exceeded, Vercel pauses the project instead of charging.
 
-One-time project setup (owner, in the Vercel dashboard):
+Current project setup (done 2026-11-13):
 
-1. **Add New → Project**, import the GitHub repository and keep the production branch `main`.
-2. Framework preset **Vite**; build command `npm run build`; output directory `dist`; install command `npm ci`.
-3. In project settings, set the Node.js version to **24.x** (the project requires Node 24, `.nvmrc`).
-4. No environment variables or secrets are needed. Do not add any.
+- Vercel project `doroboty-ai` in the Hobby team `dorobotyai`, production URL https://doroboty-ai-three.vercel.app.
+- The first deployment was made with the Vercel CLI from `feature/p1-candidate-cards`. Vercel assigns a project's first deployment to production.
+- The project is connected to GitHub `michalwitek83-lab/doroboty-ai` through the Vercel GitHub app (access to this repository only). Production branch: `main`.
+- Framework preset **Vite** (detected), build command `npm run build`, default install and output settings (`dist`).
+- Node.js version **26.x** (Vercel default). The owner chose to keep it; `package.json` allows `>=24 <27`. CI still verifies on Node 24 (`.nvmrc`).
+- No environment variables or secrets. Do not add any.
+- `.vercelignore` limits CLI uploads to the static build inputs. Git builds clone the repository instead.
+- The repository is a fork, so GitHub disabled its workflows until the owner enabled them in the Actions tab (done 2026-11-13). If CI does not start on a pull request, check that tab first.
+
+CLI deploys (`npx vercel deploy`, `--prod` for production) still work, but use them only for an emergency fix; normal releases go through `main`. On Windows PowerShell, call `npx.cmd` if script execution is disabled.
 
 Every release:
 

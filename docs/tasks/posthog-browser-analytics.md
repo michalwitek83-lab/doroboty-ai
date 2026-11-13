@@ -2,9 +2,9 @@
 
 ## Intent and acceptance
 
-Add the PostHog browser library (`posthog-js`) to the deployed static prototype at https://doroboty-ai-three.vercel.app/ so the course team can observe page views and interface interactions in the PostHog US Cloud project.
+Add the PostHog browser library (`posthog-js`) to the deployed static prototype at https://doroboty-ai-three.vercel.app/ so the course team can observe page views and interface interactions in the PostHog EU Cloud project.
 
-- Initialise PostHog once at startup from `src/lib/analytics.ts`, with the public project token and the US ingestion host. The `phc_` project token is a write-only public key by design; it is not a secret.
+- Initialise PostHog once at startup from `src/lib/analytics.ts`, with the public project token and the EU ingestion host. The `phc_` project token is a write-only public key by design; it is not a secret.
 - Capture page views for hash-route changes, page leaves and autocaptured clicks. Use anonymous events only (`person_profiles: "identified_only"`, no `identify` call) and never send typed field contents or persona/scenario data explicitly.
 - Do not send events from local development, Playwright journeys or Vitest: analytics stays off on `localhost`, `127.0.0.1`, `[::1]` and non-browser environments.
 - Update the privacy page (PUB-09) and FEATURES.md (SYS-03, limits) so they no longer state that nothing is sent to an analytics system.
@@ -19,3 +19,9 @@ Deployment to Vercel and arrival of production events in PostHog must be verifie
 - `npm run test:e2e` did not run: all 38 journeys failed at browser launch because the Playwright Chromium headless shell is not provisioned. Not installed automatically, per AGENTS.md.
 - Built preview at http://127.0.0.1:3107: the privacy page shows the new analytics paragraph, posthog-js does not initialise, no request goes to posthog.com, no `ph_` storage or cookies, no console errors.
 - Not verified: event delivery from https://doroboty-ai-three.vercel.app/ (requires a deploy and a check in PostHog Activity).
+
+## Production check and EU switch (2026-11-13)
+
+- After PR #2 merged, CI passed and Vercel deployed `main`. On the live site posthog-js loaded and the first project received `$pageview` events for `#/`, `#/polityka-prywatnosci`, `#/oferty` and `#/oferty/ai-product-manager` plus one `$autocapture` click. The test URL `#/oferty?q=testowa-fraza` arrived as `#/oferty`, confirming the hash-query stripping.
+- That first project was the wrong one: the course team uses the PostHog EU Cloud project, not the US project the first token came from. The token and ingestion host now point to the EU project (`https://eu.i.posthog.com`). Autocapture is enabled in the EU project settings; session recording is off.
+- Delivery to the EU project must be re-checked after this change is deployed.
